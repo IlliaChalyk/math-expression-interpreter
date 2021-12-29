@@ -2,13 +2,15 @@ package com.my.pet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 
 public class MathExpressionInterpreterTest {
+    private static final MathContext MATH_CONTEXT = new MathContext(10, RoundingMode.DOWN);
 
     /**
      * TODO add tests for:
@@ -16,128 +18,151 @@ public class MathExpressionInterpreterTest {
      *  2) operand followed by "(" should count as multiplication
      *  3) operand inside parenthesis should ignore parenthesis
      *  4) various malformed expressions
+     *  5) case with blank on null expressions
      */
 
     @Test
-    public void shouldEvaluateAddition() {
+    public void shouldEvaluateAdditionWithOnes() {
         String expression = "2+2";
-        int expected = 4;
+        BigDecimal expected = new BigDecimal(4, MATH_CONTEXT);
         MathExpressionInterpreter interpreter = new MathExpressionInterpreter(expression);
 
-        int actual = interpreter.evaluate();
+        BigDecimal actual = interpreter.evaluate();
 
-        assertEquals(expected, actual);
+        assertEquals(expected.compareTo(actual), 0);
+    }
+
+    @Test
+    public void shouldEvaluateAdditionWithTens() {
+        String expression = "22+22";
+        BigDecimal expected = new BigDecimal(44, MATH_CONTEXT);
+        MathExpressionInterpreter interpreter = new MathExpressionInterpreter(expression);
+
+        BigDecimal actual = interpreter.evaluate();
+
+        assertEquals(expected.compareTo(actual), 0);
     }
 
     @Test
     public void shouldEvaluateSubtraction() {
         String expression = "10-5";
         MathExpressionInterpreter interpreter = new MathExpressionInterpreter(expression);
-        int expected = 5;
+        BigDecimal expected = new BigDecimal(5, MATH_CONTEXT);
 
-        int actual = interpreter.evaluate();
+        BigDecimal actual = interpreter.evaluate();
 
-        assertEquals(expected, actual);
+        assertEquals(expected.compareTo(actual), 0);
     }
 
     @Test
     public void shouldEvaluateMultiplication() {
         String expression = "20*2";
         MathExpressionInterpreter interpreter = new MathExpressionInterpreter(expression);
-        int expected = 40;
+        BigDecimal expected = new BigDecimal(40, MATH_CONTEXT);
 
-        int actual = interpreter.evaluate();
+        BigDecimal actual = interpreter.evaluate();
 
-        assertEquals(expected, actual);
+        assertEquals(expected.compareTo(actual), 0);
     }
 
     @Test
     public void shouldEvaluateDivision() {
         String expression = "36/6";
         MathExpressionInterpreter interpreter = new MathExpressionInterpreter(expression);
-        int expected = 6;
+        BigDecimal expected = new BigDecimal(6, MATH_CONTEXT);
 
-        int actual = interpreter.evaluate();
+        BigDecimal actual = interpreter.evaluate();
 
-        assertEquals(expected, actual);
+        assertEquals(expected.compareTo(actual), 0);
     }
 
     @Test
     public void shouldEvaluateExponent() {
         String expression = "5^2";
         MathExpressionInterpreter interpreter = new MathExpressionInterpreter(expression);
-        int expected = 25;
+        BigDecimal expected = new BigDecimal(25, MATH_CONTEXT);
 
-        int actual = interpreter.evaluate();
+        BigDecimal actual = interpreter.evaluate();
 
-        assertEquals(expected, actual);
+        assertEquals(expected.compareTo(actual), 0);
     }
 
     @Test
     public void shouldEvaluateSquareRoot() {
         String expression = "sqrt(9)";
         MathExpressionInterpreter interpreter = new MathExpressionInterpreter(expression);
-        int expected = 3;
+        BigDecimal expected = new BigDecimal(3, MATH_CONTEXT);
 
-        int actual = interpreter.evaluate();
+        BigDecimal actual = interpreter.evaluate();
 
-        assertEquals(expected, actual);
+        assertEquals(expected.compareTo(actual), 0);
     }
 
     @Test
     public void shouldEvaluateExpressionWithParenthesis() {
         String expression = "2*(5+5)";
         MathExpressionInterpreter interpreter = new MathExpressionInterpreter(expression);
-        int expected = 20;
+        BigDecimal expected = new BigDecimal(20, MATH_CONTEXT);
 
-        int actual = interpreter.evaluate();
+        BigDecimal actual = interpreter.evaluate();
 
-        assertEquals(expected, actual);
+        assertEquals(expected.compareTo(actual), 0);
     }
 
     @Test
     public void shouldEvaluateExpressionWithSingleOperand() {
         String expression = "456";
         MathExpressionInterpreter interpreter = new MathExpressionInterpreter(expression);
-        int expected = 456;
+        BigDecimal expected = new BigDecimal(456, MATH_CONTEXT);
 
-        int actual = interpreter.evaluate();
+        BigDecimal actual = interpreter.evaluate();
 
-        assertEquals(expected, actual);
+        assertEquals(expected.compareTo(actual), 0);
     }
 
     @Test
     public void shouldEvaluateComplexExpression() {
         String expression = "(11+3)/10+12^2*(sqrt(9)-1)+44+(-0.4)";
         MathExpressionInterpreter interpreter = new MathExpressionInterpreter(expression);
-        int expected = 333;
+        BigDecimal expected = new BigDecimal(333, MATH_CONTEXT);
 
-        int actual = interpreter.evaluate();
+        BigDecimal actual = interpreter.evaluate();
 
-        assertEquals(expected, actual);
+        assertEquals(expected.compareTo(actual), 0);
     }
 
     @Test
     public void shouldEvaluateExpressionWithSpacesBetweenOperatorsAndOperands() {
-        String expression = "(  11+3)/10 + 12 ^2 (sqrt ( 9)-1)+   44+( -0.4)";
+        String expression = "( 11   +  3) / 10+ 12^2  *(sqrt  ( 9 ) - 1)+ 44 +(-0.4)";
         MathExpressionInterpreter interpreter = new MathExpressionInterpreter(expression);
-        int expected = 333;
+        BigDecimal expected = new BigDecimal(333, MATH_CONTEXT);
 
-        int actual = interpreter.evaluate();
+        BigDecimal actual = interpreter.evaluate();
 
-        assertEquals(expected, actual);
+        assertEquals(expected.compareTo(actual), 0);
     }
 
     @Test
     public void shouldEvaluateExpressionWithHugeNumbers() {
-        //TODO
-        String expression = "(1165694732256345764347567+344444444)/10+12^2(sqrt(743)-92822)+44+(-0.4040340257345)";
+        String expression = "(1000000000000000000000000+0.0000000000000000000001)";
         MathExpressionInterpreter interpreter = new MathExpressionInterpreter(expression);
-        BigDecimal expected = new BigDecimal("116569470000000000000000");
+        BigDecimal expected = new BigDecimal("1000000000000000000000000.0000000000000000000001", MATH_CONTEXT);
+        System.out.println(expected);
 
-        BigDecimal actual = new BigDecimal(interpreter.evaluate());
+        BigDecimal actual = interpreter.evaluate();
 
-        assertTrue(expected.equals(actual));
+        assertEquals(expected.compareTo(actual), 0);
+    }
+
+    @Test
+    public void shouldAddTwoDecimalsWithOmittedWholePart() {
+        String expression = ".1+.1";
+        MathExpressionInterpreter interpreter = new MathExpressionInterpreter(expression);
+        BigDecimal expected = new BigDecimal("0.2", MATH_CONTEXT);
+
+        BigDecimal actual = interpreter.evaluate();
+
+        assertEquals(expected.compareTo(actual), 0);
     }
 
     @Test

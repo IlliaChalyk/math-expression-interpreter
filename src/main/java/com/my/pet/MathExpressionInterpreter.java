@@ -9,6 +9,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
@@ -16,24 +17,40 @@ import java.util.regex.Pattern;
 
 //TODO: refactoring
 public class MathExpressionInterpreter {
-    private static final String ARGUMENTS_REGEX =
-            "(?<functionName>sqrt)|(?<functionBody>(?<=sqrt)\\(.*?\\))|(?<number>((?<=\\()[-+])?\\d*\\.?\\d+)|(?<operator>[+\\-*/()^])";
-    private static final int DEFAULT_PRECISION = 10;
+    private static final String ARGUMENTS_REGEX = "(?<functionName>sqrt)" +
+            "|(?<functionBody>(?<=sqrt)\\(.*?\\))" +
+            "|(?<number>((?<=\\()[-+])?\\d*\\.?\\d+)" +
+            "|(?<operator>[+\\-*/()^])";
+//    private static final String VALIDATION_REGEX = "^([+-])?(\\(?\\d+(\\.\\d+)?[+\\-*/^]\\)?)+";
+    private static final String VALIDATION_REGEX = "(^[+-]|[+-](?<=\\()\\()?(\\(?\\d+(\\.\\d+)?([+\\-*/^])?|(sqrt)?\\)?)+";
+    public static final MathContext DEFAULT_MATH_CONTEXT = new MathContext(10, RoundingMode.DOWN);
 
     private final MathContext mathContext;
     private final String expression;
 
-    private Queue<Object> reversePolishNotation = new ArrayDeque<>();
-    private Deque<Operator> operators = new ArrayDeque<>();
+    private final Queue<Object> reversePolishNotation = new ArrayDeque<>();
+    private final Deque<Operator> operators = new ArrayDeque<>();
 
-    public MathExpressionInterpreter(String expression) {
-        this.mathContext = new MathContext(DEFAULT_PRECISION, RoundingMode.DOWN);
+    private MathExpressionInterpreter(String expression) {
+        this.mathContext = DEFAULT_MATH_CONTEXT;
         this.expression = expression;
     }
 
-    public MathExpressionInterpreter(String expression, MathContext mathContext) {
-        this.mathContext = mathContext;
-        this.expression = expression;
+    public static MathExpressionInterpreter create(String expression) {
+        validate(expression);
+        return new MathExpressionInterpreter(expression);
+    }
+
+    private static void validate(String expression) {
+        if (Objects.isNull(expression)) {
+            throw new MalformedExpressionException("Expression cannot be null");
+        }
+        if (expression.trim().isEmpty()) {
+            throw new MalformedExpressionException("Expression cannot be blank");
+        }
+        if (!expression.matches(VALIDATION_REGEX)) {
+            throw new MalformedExpressionException("Malformed expression: " + expression);
+        }
     }
 
     public BigDecimal evaluate() {
